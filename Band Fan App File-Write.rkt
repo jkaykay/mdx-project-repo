@@ -16,6 +16,7 @@ Project Details:
 
 #|--------------------------------------------------------------------- Start: Build Database From Files --------------------------------------------------------------------------------|#
 #|
+Written by Jay
 Initialize Program - Load Database
 Returns a List of Structs. Structs are appropriate for each relation.
 This function (and program) was written in a way such that "(" and ")" mark the beginning and end of names containing spaces. 
@@ -167,12 +168,14 @@ Data in text files are expected to have followed all data type/string patterns.
 (close-input-port reader)
 (define fanSaved (import-data copyData "fansave"))
 
+#|
 (define testWriteAppend (λ ()
                           (define writer (open-output-file "bands.txt" #:mode 'text #:exists 'append)) ;;maybe use update and just refill with entire database
                           (display "\rcoolerband password band2@email.com (Cooler Band)" writer)
                           (close-output-port writer)
                           )
   )
+|#
 
 #|--------------------------------------------------------------------- End: Build Database From Files --------------------------------------------------------------------------------|#
 
