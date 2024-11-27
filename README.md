@@ -1,9 +1,6 @@
 # mdx-project-repo
-Repository for Group's Main Code.
+We, students of MDX London, are using this repository to manage collaborative changes to our code. 
+Rather than having to send files every which way so we can all have the updated version, we have chosen GitHub to manage changes and versions. 
 
-This is a minor system that will be coded in Racket.
-The domain of the system will relate to Bands and Music Fans.
-
-This is merely a project that we first year students are undertaking as part of the course. 
-
-Bananas.
+This is a project assigned to us as part of our course. 
+That is all. Good day. 
