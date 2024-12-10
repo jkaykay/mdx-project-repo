@@ -4,9 +4,9 @@ Author: Jay Yang - M01006234
 Course: BSc CompSci Year 1 '24-'25
 Module: Programming
 
-Listen, I'm going a little wild with this so I might not have comments for everything. Ask me for details and I will explain.
+Listen, I'm going a little wild with this so I might not have comments for everything. Ask me for details and I will explain or it may be explained in the report. 
 
-Project Details: 
+Project Details: In the report zzz
 |#
 
 
@@ -21,9 +21,10 @@ of my own way to do it.
 
 Other than that, every line's text is separated by spaces.
 
-This program will export data to txt files in the correct formats for re-reading. 
+This program will export data to txt files in the correct formats for re-reading.
+
 |#
-(define import-data (λ (copy type)
+(define import-data (λ (copy type) ;copy = copy of lines , type = string determining type of struct expected
                       (define buildList '()) ; list to be returned
                       (define buildString "")
                       (for ((line copy))
@@ -55,7 +56,7 @@ This program will export data to txt files in the correct formats for re-reading
                                   (set! hold (string-append hold (string char)))
                                   )
                                  ((and (equal? char #\)) (equal? type "event"))
-                                  (for ((char2 (substring line (+ getPosition i 2) (string-length line)))) ; it just kind of magically worked. I suspect it has to be written this way because I did (add1 i) on line 30. 
+                                  (for ((char2 (substring line (+ getPosition i 2) (string-length line)))) ; it just kind of magically worked. I suspect it has to be written this way because I did (add1 i) on line 47. 
                                     #:break (equal? char2 #\space)
                                     (set! help (string-append help (string char2)))
                                     )
@@ -167,8 +168,8 @@ This program will export data to txt files in the correct formats for re-reading
 
 #| Build Relation: Fan |#
 (define reader (open-input-file "DB/fans.txt" #:mode 'binary))
-(port-count-lines! reader)
-(define copyData (port->lines reader #:line-mode 'any))
+(port-count-lines! reader) ;;not sure if line counting is necessary
+(define copyData (port->lines reader #:line-mode 'any)) ;generate list of lines (strings) from text file
 (close-input-port reader)
 (define fanList (import-data copyData "fan"))
 
@@ -203,8 +204,11 @@ This program will export data to txt files in the correct formats for re-reading
 #|--------------------------------------------------------------------- End: Build Database From Files --------------------------------------------------------------------------------|#
 
 #|-------------------------------------------------------------------- Start: Various Program Functions  ------------------------------------------------------------------------------|#
+;; I apologize for the messy organization of functions 
 
-(define randBannerNum (λ ()
+;; I researched all this other stuff and then didn't bother to research that there is a literal random function built into racket
+;; this function generates image file paths pulled from the relative struct
+(define randBannerNum (λ () 
                         (cond
                           ((< (vector-length eventPaths) 5)
                            (first (shuffle (range 0 (vector-length eventPaths)))))
@@ -213,19 +217,16 @@ This program will export data to txt files in the correct formats for re-reading
                         )
   )
 
-;; while loop hygeinic macro
+;; while loop macro (only used in like, 1 part of this program. and is a part that I didn't get to finish.
 (define-syntax-rule (my-while condition body ...)
   (let loop ()
     (when condition
       body ...
       (loop))))
 
+(define loggedin? (list #f "" "")) ; GLOBAL checker of whether the system is logged into. also stores username and account type if logged in is #t. 
 
-
-
-
-(define loggedin? (list #f "" ""))
-
+;get account struct tied to logged in username
 (define getNameStruct (λ ()
                         (cond
                           ((equal? (first (reverse loggedin?)) "fan")
@@ -236,6 +237,7 @@ This program will export data to txt files in the correct formats for re-reading
                         )
   )
 
+;; partially implemented. not used to full capacity of intention. (OoT)
 (define getProfilePhoto (λ ()
                           (cond
                             ((fanAccount? (getNameStruct))
@@ -258,8 +260,8 @@ This program will export data to txt files in the correct formats for re-reading
                           )
   )
 
-#|----- Fan Profile Things-----|#
 
+;; checks the fanSaved list of structs to determine if the username is already paired with an eventid
 (define alreadyAdded? (λ (fanUsername eventID)
                         (define result #f)
                         (for ((save fanSaved))
@@ -273,6 +275,7 @@ This program will export data to txt files in the correct formats for re-reading
                         )            
   )
 
+;; simply returns events that the user has already saved. (evaluated from fanSaved list of structs)
 (define getFanEvents (λ ()
                        (define events '())
                        (define filteredList (filter (λ (elem) (equal? (first (rest loggedin?)) (fanSave-fanusername elem))) fanSaved))
@@ -290,16 +293,19 @@ This program will export data to txt files in the correct formats for re-reading
                        )
   )
 
+;; Filter the eventList using the band username 
 (define getBandEvents (λ ()
                         (filter (λ (elem) (equal? (first (rest loggedin?)) (event-bandusername elem))) eventList) 
                         )
   )
 
+;; Get the Band Name of the band based on the band username by filtering the bandList relation
 (define getBandName (λ ()
                       (bandAccount-bandname (first (filter (λ (elem) (equal? (first (rest loggedin?)) (bandAccount-username elem))) bandList)))
                       )
   )
 
+;; Set the main display area to empty (So I can add children)
 (define clearMain (λ ()
                     (for ((i (send main get-children)))
                       (send main delete-child i)
@@ -307,6 +313,7 @@ This program will export data to txt files in the correct formats for re-reading
                     )
   )
 
+;; Changes the buttons on the title area when logging in or out. 
 (define changeLSP (λ ()
                     (cond
                       ((boolean=? (first loggedin?) #t)
@@ -325,12 +332,14 @@ This program will export data to txt files in the correct formats for re-reading
                     )
   )
 
+; Clear the search text-field and filter found on every page
 (define clearSearch (λ ()
                       (send filterDrop set-selection 0)
                       (send searchAlways set-value "")
                       )
   )
 
+;Go to home page
 (define toHome (λ ()
                  (clearMain)
                  (send main add-child homePanel)
@@ -339,6 +348,7 @@ This program will export data to txt files in the correct formats for re-reading
                  )
   )
 
+; Go to login page. (always set it to default.)
 (define toLogin (λ ()
                   (send loginMessenger set-label "")
                   (send loginUsername set-value "")
@@ -350,7 +360,9 @@ This program will export data to txt files in the correct formats for re-reading
                   )
   )
 
-
+;; check user inputs and compare them against usernames and password in the database.
+;;checks both the fan and band relations and automatically determines account type
+;; mutates the global loggedin? var. 
 (define verifyLogin (λ ()
                       (define username (send loginUsername get-value))
                       (define password (send loginPassword get-value))
@@ -404,6 +416,7 @@ This program will export data to txt files in the correct formats for re-reading
                       )
   )
 
+;; go to signup page, set to default state
 (define toSignUp (λ ()
                    (for ((i (send stayLeft get-children)))
                      (send stayLeft delete-child i)
@@ -418,7 +431,8 @@ This program will export data to txt files in the correct formats for re-reading
                    (send statePage set-label "Sign Up")
                    )
   )
-                   
+
+;; goes to registration state for fans
 (define registerFan (λ ()
                       (for ((i (send regiIn get-children)))
                         (send regiIn delete-child i)
@@ -430,6 +444,7 @@ This program will export data to txt files in the correct formats for re-reading
                       )
   )
 
+;; goes to registration state for bands
 (define registerBand (λ ()
                        (for ((i (send regiIn get-children)))
                          (send regiIn delete-child i)
@@ -441,12 +456,14 @@ This program will export data to txt files in the correct formats for re-reading
                        )
   )
 
+;; set error register page error message to default 
 (define resetMessageBox (λ ()
                           (send regiMessenger set-label "")
                           (send regiMessenger set-color #f)
                           )
   )
 
+;; check that new username registration attempt does not already exist in the system (for all account types)
 (define alreadyUsername? (λ (input)
                            (define result #f)
                            (for ((i fanList))
@@ -469,12 +486,15 @@ This program will export data to txt files in the correct formats for re-reading
                            )
   )
 
+; verify registration inputs. gaurd clausing. testing input using regex pattern matching.
+;; once verified, appends to list. then appends the physical file depeneding on account type.
 (define verifyRegi (λ ()
                      (define copy "")
                      (define beforeAt "")
                      (define afterAt "")
                      (define @counter 0)
 
+                     ;local function to split emails for better handling (didn't want to write a long, complicated regex pattern. I'm not THAT good. and regex in racket is weird.)
                      (define split (λ ()
                                      (for ((i (string-length copy)))
                                        #:final (equal? (string (string-ref copy i)) "@")
@@ -635,6 +655,8 @@ This program will export data to txt files in the correct formats for re-reading
                      )
   )
 
+; verify inputs for creating a new concert listing
+;; regex gaurd clause. some nested conditions were necessary tho, due to some higher condition testing. 
 (define verifyAdd (λ ()
                     (send inputErrMsg set-color #f)
                     (send inputErrMsg set-label "")
@@ -782,10 +804,140 @@ This program will export data to txt files in the correct formats for re-reading
                       )
                     )
   )
-                       
-                      
-                       
 
+;; Basically the same as the last function, but checks a passed struct to match with struct in main relation.
+;; Instead of appending, the file has to be erased and all data has to be rewritten (from list)
+(define verifyEdit (λ (struct)
+                     (send editErrMsg set-color #f)
+                     (send editErrMsg set-label "")
+                     (define day "")
+                     (define month "")
+                     (define year "")
+                     (define leap? 0)
+                     (define hr 0)
+                     (define min 0)
+
+                     (cond
+                       ((equal? (send locationEdit get-value) "")
+                        (send editErrMsg set-label "Please enter location.")(send editErrMsg set-color "red"))
+                       ((equal? (send dateEdit get-value) "")
+                        (send editErrMsg set-label "Please enter date.")(send editErrMsg set-color "red"))
+                       ((equal? (send priceEdit get-value) "")
+                        (send editErrMsg set-label "Please enter price.")(send editErrMsg set-color "red"))
+                       ((equal? (send timeEditHr get-value) "")
+                        (send editErrMsg set-label "Please enter hour.")(send editErrMsg set-color "red"))
+                       ((equal? (send timeEditMin get-value) "")
+                        (send editErrMsg set-label "Please enter minutes.")(send editErrMsg set-color "red"))
+
+                      
+                       ((empty? (regexp-match* #rx"[a-zA-Z]+" (send locationEdit get-value)))
+                        (send editErrMsg set-label "Venue Edit contains no letters. Please ensure you've entered it correctly.")(send editErrMsg set-color "red"))
+                       ((empty? (regexp-match* #rx"[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]" (send dateEdit get-value)))
+                        (send editErrMsg set-label "Date not in correct format.")(send editErrMsg set-color "red"))
+                      
+                       ((not (empty? (regexp-match* #rx"[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]" (send dateEdit get-value))))
+                       
+                        (for ((i (send dateEdit get-value)) (j (string-length (send dateEdit get-value))))
+                          (cond
+                            ((not (equal? (string i) "-"))
+                             (cond
+                               ((< j 2)
+                                (set! day (string-append day (string i))))
+                               ((< j 5)
+                                (set! month (string-append month (string i))))
+                               (else (set! year (string-append year (string i))))
+                               )
+                             )
+                            )
+                          )
+                       
+                        (set! day (string->number day))
+                        (set! month (string->number month))
+                        (set! year (string->number year))
+
+                        (cond
+                          ((= (modulo year 100) 0)
+                           (cond
+                             ((= (modulo year 400) 0)
+                              (set! leap? 29))
+                             )
+                           )
+
+                          ((= (modulo year 4) 0)
+                           (set! leap? 29))
+                          (else (set! leap? 28))
+                          )
+
+                        (cond
+                          ((> month 12)
+                           (send editErrMsg set-label "Inputted month too high.")(send editErrMsg set-color "red"))
+                          ((> day 31)
+                           (send editErrMsg set-label "Inputted day too high.")(send editErrMsg set-color "red"))
+                          ((< day 0)
+                           (send editErrMsg set-label "Inputted day too low.")(send editErrMsg set-color "red"))
+                          ((> day 31)
+                           (send editErrMsg set-label "Inputted day too high.")(send editErrMsg set-color "red"))
+                          ((and (or (= month 4) (= month 6) (= month 9) (= month 11)) (> day 30))
+                           (send editErrMsg set-label "Inputted day too high.")(send editErrMsg set-color "red"))
+                          ((and (= month 2) (> day leap?))
+                           (send editErrMsg set-label "Inputted day too high.")(send editErrMsg set-color "red"))
+                          ((< year 2024)
+                           (send editErrMsg set-label "Year too old.")(send editErrMsg set-color "red"))
+                          ((or (> (string-length (send timeEditHr get-value)) 2) (> (string-length (send timeEditMin get-value)) 2))
+                           (send editErrMsg set-label "Too many digits in time Edit.")(send editErrMsg set-color "red"))
+                          ((not (empty? (regexp-match* #rx"[^0-9]+" (send timeEditHr get-value))))
+                           (send editErrMsg set-label "Non-numerical characters in time Edit.")(send editErrMsg set-color "red"))
+                          ((not (empty? (regexp-match* #rx"[^0-9]+" (send timeEditMin get-value))))
+                           (send editErrMsg set-label "Non-numerical characters in time Edit.")(send editErrMsg set-color "red"))
+                          ((and (empty? (regexp-match* #rx"[^0-9]+" (send timeEditHr get-value))) (empty? (regexp-match* #rx"[^0-9]+" (send timeEditMin get-value))))
+                           (set! hr (string->number (send timeEditHr get-value)))
+                           (set! min (string->number (send timeEditMin get-value)))
+
+                           (cond
+                             ((> hr 23)
+                              (send editErrMsg set-label "Hour exceeds 24-hr limit.")(send editErrMsg set-color "red"))
+                             ((> min 59)
+                              (send editErrMsg set-label "Minutes exceed 60-sec limit.")(send editErrMsg set-color "red"))
+                      
+
+
+                             ((not (empty? (regexp-match* #rx"(?!\\.)[^0-9]+" (send priceEdit get-value))))
+                              (send editErrMsg set-label "Bad value in price Edit.")(send editErrMsg set-color "red"))
+                             ((empty? (regexp-match* #rx"[0-9]+\\.[0-9][0-9]" (send priceEdit get-value)))
+                              (send editErrMsg set-label "Incorrect pricing format.")(send editErrMsg set-color "red"))
+                             ((> (length (regexp-match* #rx"[0-9]+\\.[0-9][0-9]" (send priceEdit get-value))) 1)
+                              (send editErrMsg set-label "Incorrect pricing format.")(send editErrMsg set-color "red"))
+                             ((not (equal? (string (string-ref (send priceEdit get-value) (- (string-length (send priceEdit get-value)) 3))) "."))
+                              (send editErrMsg set-label "Incorrect pricing format.")(send editErrMsg set-color "red"))
+
+                             (else
+
+                              (for ((i eventList))
+                                #:final (equal? i struct)
+                                (cond
+                                  ((equal? i struct)
+                                   (set-event-venue! i (send locationEdit get-value))
+                                   (set-event-date! i (send dateEdit get-value))
+                                   (set-event-time! i (string-join `(,(send timeEditHr get-value) ":" ,(send timeEditMin get-value)) ""))
+                                   (set-event-price! i (send priceEdit get-value))
+                                   )
+                                  )
+                                )
+
+                              (updateEventFile)
+                              (toBandConcerts)
+                              )
+                             )
+                           )
+                          )
+                        )
+                       )
+                     )
+  )
+                           
+                       
+;; dynamically sized panel that changes its size based on amount of children preceding it
+;part of the event and band displays
 (define checkHeight ;; Responsive height in comparison to amount of results found. (Spacing)
   (λ (a b)
     (cond
@@ -801,7 +953,7 @@ This program will export data to txt files in the correct formats for re-reading
     )                            
   )
 
-
+;; Go to (or refresh) search page and perform searches by sending to the custom subclass
 (define do-to-Search (λ ()
                        (clearMain)
                        (send statePage set-label "Searching for events...")
@@ -817,7 +969,7 @@ This program will export data to txt files in the correct formats for re-reading
   )
 
 
-
+;; partially implemented. not used to full capacity of intention. (OoT)
 (define toFanProfile (λ ()
                        (clearMain)
                        (send statePage set-label "My Profile")
@@ -828,6 +980,7 @@ This program will export data to txt files in the correct formats for re-reading
                        )
   )
 
+;; logout of system and revert various variables to default
 (define loggingOut (λ ()
                      (cond
                        ((equal? (first (reverse loggedin?)) "band")
@@ -842,6 +995,7 @@ This program will export data to txt files in the correct formats for re-reading
                      )
   )
 
+;; go to fan saved page
 (define toSavedList (λ ()
                       (cond
                         ((and (equal? (first loggedin?) #t) (equal? (first (reverse loggedin?)) "fan"))
@@ -859,6 +1013,7 @@ This program will export data to txt files in the correct formats for re-reading
                       )
   )
 
+;; go to band created concerts
 (define toBandConcerts (λ ()
                          (clearMain)
                          (send statePage set-label "My Listed Concerts")
@@ -870,6 +1025,7 @@ This program will export data to txt files in the correct formats for re-reading
                          )
   )
 
+;; clear the events.txt file and write the new eventList to it
 (define updateEventFile (λ ()
                           (define letter "")
                           (define writer (open-output-file "DB/events.txt" #:mode 'text #:exists 'truncate))
@@ -897,8 +1053,10 @@ This program will export data to txt files in the correct formats for re-reading
                           )
   )
 
+;; set an event to a
 (define setAvailable (λ (struct)
                        (for ((i eventList))
+                         #:final (equal? i struct)
                          (cond
                            ((equal? i struct)
                             (set-event-status! i "Available")
@@ -910,8 +1068,10 @@ This program will export data to txt files in the correct formats for re-reading
                        )
   )
 
+;; set an event to b
 (define setBooked (λ (struct)
                        (for ((i eventList))
+                         #:final (equal? i struct)
                          (cond
                            ((equal? i struct)
                             (set-event-status! i "Booked")
@@ -923,8 +1083,10 @@ This program will export data to txt files in the correct formats for re-reading
                        )
   )
 
+;; set an event to c
 (define setCancelled (λ (struct)
                        (for ((i eventList))
+                         #:final (equal? i struct)
                          (cond
                            ((equal? i struct)
                             (set-event-status! i "Cancelled")
@@ -936,6 +1098,7 @@ This program will export data to txt files in the correct formats for re-reading
                        )
   )
 
+;; go to concert creation page
 (define toAddNew (λ ()
                    (clearMain)
                    (send main add-child createEventMain)
@@ -945,14 +1108,48 @@ This program will export data to txt files in the correct formats for re-reading
                    (send timeInputHr set-value "")
                    (send timeInputMin set-value "")
                    (send priceInput set-value "")
+                   (send statePage set-label "Concert Creation")
                    )
   )
+
+;go to concert edit page. passed an event struct
+(define toEditConcert (λ (struct)
+                        (define hr "")
+                        (define min "")
+
+                        (for ((i (event-time struct))(d (string-length (event-time struct))))
+                          (cond
+                            ((not (equal? (string i) ":"))
+                             (cond
+                               ((< d 2)
+                                (set! hr (string-append hr (string i)))
+                                )
+                               (else (set! min (string-append min (string i))))
+                               )
+                             )
+                            )
+                          )
+                        
+                        (clearMain)
+                        (send main add-child editEventMain)
+                        (send bandNameEdit set-value (getBandName))
+                        (send locationEdit set-value (event-venue struct))
+                        (send dateEdit set-value (event-date struct))
+                        (send timeEditHr set-value hr)
+                        (send timeEditMin set-value min)
+                        (send priceEdit set-value (event-price struct))
+                        (send attemptEdit set-extra struct)
+                        (send statePage set-label "Concert Editing")
+                        )
+  )
+                        
+                        
 
 #|--------------------------------------------------------------------- End: Various Program Functions  -----------------------------------------------------------------------------|#
 
 #|-------------------------------------------------------------------------------------- Start: Custom Classes ------------------------------------------------------------------------------------|#
 
-;; Created a copy of button class so I can store/send more data for the callback
+;; Created a subclass of button% so I can store/send more data for the callback
 ;; No need for type-testing because I know what it's supposed to be
 ;; And the user need not concern themselves with what it is
 (define updatingButton% (class button%
@@ -970,7 +1167,8 @@ This program will export data to txt files in the correct formats for re-reading
   )
 
 ;; I really disliked having to create message objects over and over if I wanted a multiline text thingy.
-;; So, I made a textbox class that will create multi-line messages where each line's character length can be specified through a field. 
+;; So, I made a textbox class that will create multi-line messages where each line's character length can be specified through a field.
+;; still needs to be written in a way were words don't get split (maybe I do it, maybe I don't zzz)
 (define messageBox% (class vertical-panel%
                       (super-new)
                       (init-field (message ""))
@@ -1047,6 +1245,8 @@ This program will export data to txt files in the correct formats for re-reading
                       )
   )
 
+;; Wanted to automate the search list creation, experimented and created this subclass with other objects instantiated within it.
+;; Did NOT want to have to create multiple boxes and messages myself for every search that ever happens
 (define searchResultBox% (class vertical-panel%
                            (super-new)
 
@@ -1310,7 +1510,7 @@ This program will export data to txt files in the correct formats for re-reading
                            )
   )
 
-
+;; Same reasoning and purpose as above (but for fans to view their saved events)
 (define eventDisplay% (class vertical-panel%
                         (super-new)
                         (define boxObjects '())
@@ -1385,38 +1585,38 @@ This program will export data to txt files in the correct formats for re-reading
                                                                                                   ,(new message%
                                                                                                         [parent i]
                                                                                                         [label (string-append "Band: " name)]
-                                                                                                        [horiz-margin 10]
-                                                                                                        [vert-margin 10]
+                                                                                                        [horiz-margin 4]
+                                                                                                        [vert-margin 4]
                                                                                                         )
                                                                                                   ,(new message%
                                                                                                         [parent i]
                                                                                                         [label (string-append "Location: " (event-venue j))]
-                                                                                                        [horiz-margin 10]
-                                                                                                        [vert-margin 10]
+                                                                                                        [horiz-margin 4]
+                                                                                                        [vert-margin 4]
                                                                                                         )
                                                                                                   ,(new message%
                                                                                                         [parent i]
                                                                                                         [label (string-append "Date: " (event-date j))]
-                                                                                                        [horiz-margin 10]
-                                                                                                        [vert-margin 10]
+                                                                                                        [horiz-margin 4]
+                                                                                                        [vert-margin 4]
                                                                                                         )
                                                                                                   ,(new message%
                                                                                                         [parent i]
                                                                                                         [label (string-append "@ " (event-time j))]
-                                                                                                        [horiz-margin 10]
-                                                                                                        [vert-margin 10]
+                                                                                                        [horiz-margin 4]
+                                                                                                        [vert-margin 4]
                                                                                                         )
                                                                                                   ,(new message%
                                                                                                         [parent i]
                                                                                                         [label (string-append "Price: £" (event-price j))]
-                                                                                                        [horiz-margin 10]
-                                                                                                        [vert-margin 10]
+                                                                                                        [horiz-margin 4]
+                                                                                                        [vert-margin 4]
                                                                                                         )
                                                                                                   ,(new message%
                                                                                                         [parent i]
                                                                                                         [label (event-status j)]
-                                                                                                        [horiz-margin 10]
-                                                                                                        [vert-margin 10]
+                                                                                                        [horiz-margin 4]
+                                                                                                        [vert-margin 4]
                                                                                                         )
                                                                                                   ,(new button%
                                                                                                         [parent i]
@@ -1471,7 +1671,7 @@ This program will export data to txt files in the correct formats for re-reading
                         )
   )
 
-
+;; Same reasoning and purpose as above (but for bands to view their created events)
 (define concertDisplay% (class vertical-panel%
                           (super-new)
                           (define boxObjects '())
@@ -1590,6 +1790,10 @@ This program will export data to txt files in the correct formats for re-reading
                                                                 [label "Edit This Concert"]
                                                                 [horiz-margin 10]
                                                                 [vert-margin 10]
+                                                                [callback (λ (o e)
+                                                                            (toEditConcert j)
+                                                                            )
+                                                                          ]
                                                                 )
                                                          (cond
                                                            ((equal? (event-status j) "Available")
@@ -1674,8 +1878,9 @@ This program will export data to txt files in the correct formats for re-reading
 #|-------------------------------------------------------------------------------- Start: GUI Elements  ------------------------------------------------------------------------------------|#
 #| I originally thought of creating a web server for this, but customizing wep pages through racket is way too different.
 I came to the conclusion that, if I aim to do this in web form, I might as well just use HTML as is instead of racket.
-I don't have the time to learn more about web applications beyond the basics I already know.|#
+I don't have the time to learn more about web applications in racket beyond the basics I already know.|#
 
+;;Different sections, panels, pages of the GUI are separated by titles
 #|-------------------------------------------------------------------------|#
 (define app (new frame%
                  (label "Bandifan!")
@@ -1784,7 +1989,7 @@ I don't have the time to learn more about web applications beyond the basics I a
 
 (define logoutbut (new button%
                        [parent buttonHolder]
-                       [label "Logout"]
+                       [label (read-bitmap "GUI Images/main-gui/logout-button.png")]
                        [horiz-margin 2]
                        [vert-margin 0]
                        [min-width 80]
@@ -1800,10 +2005,9 @@ I don't have the time to learn more about web applications beyond the basics I a
 
 (define profilebut (new button%
                         [parent buttonHolder]
-                        [label "Profile"]
+                        [label (read-bitmap "GUI Images/main-gui/profile-button.png")]
                         [horiz-margin 2]
                         [vert-margin 0]
-                        [min-width 80]
                         [min-height 25]
                         [style '(deleted)]
                         [callback (λ (o e)
@@ -1861,7 +2065,7 @@ I don't have the time to learn more about web applications beyond the basics I a
 
 (define concertButton (new button%
                            [parent naviButtons]
-                           [label "My Concerts"]
+                           [label (read-bitmap "GUI Images/main-gui/myconcerts-button.png")]
                            [horiz-margin 2]
                            [vert-margin 0]
                            [style '(deleted)]
@@ -2010,29 +2214,44 @@ I don't have the time to learn more about web applications beyond the basics I a
 
 (define bandAd1 (new vertical-panel%
                      [parent bandAds]
-                     [alignment '(center center)]
-                     [style '(border)]
                      [horiz-margin 6]
-                     [vert-margin 6]
                      )
+  )
+
+(define bandPromo1 (new message%
+                        [parent bandAd1]
+                        [label (read-bitmap "GUI Images/profile-pics/band.png")]
+                        [horiz-margin 0]
+                        [vert-margin 0]
+                        )
   )
 
 (define bandAd2 (new vertical-panel%
                      [parent bandAds]
-                     [alignment '(center center)]
-                     [style '(border)]
                      [horiz-margin 6]
-                     [vert-margin 6]
                      )
+  )
+
+(define bandPromo2 (new message%
+                        [parent bandAd2]
+                        [label (read-bitmap "GUI Images/profile-pics/band.png")]
+                        [horiz-margin 0]
+                        [vert-margin 0]
+                        )
   )
 
 (define bandAd3 (new vertical-panel%
                      [parent bandAds]
-                     [alignment '(center center)]
-                     [style '(border)]
                      [horiz-margin 6]
-                     [vert-margin 6]
                      )
+  )
+
+(define bandPromo3 (new message%
+                        [parent bandAd3]
+                        [label (read-bitmap "GUI Images/profile-pics/band.png")]
+                        [horiz-margin 0]
+                        [vert-margin 0]
+                        )
   )
 #|--------End Home-----------|#
 
@@ -2040,7 +2259,7 @@ I don't have the time to learn more about web applications beyond the basics I a
 
 (define loginPanel (new vertical-panel%
                         [parent main]
-                        [style '(deleted border)]
+                        [style '(deleted)]
                         [alignment '(left top)]
                         [horiz-margin 0]
                         [vert-margin 0]
@@ -2061,6 +2280,12 @@ I don't have the time to learn more about web applications beyond the basics I a
                       [horiz-margin 0]
                       [vert-margin 0]
                       [min-width 700]
+                      )
+  )
+
+(define loginpic (new message%
+                      [parent moreInfo]
+                      [label (read-bitmap "GUI Images/main-gui/login-pic.png")]
                       )
   )
 
@@ -2190,7 +2415,7 @@ I don't have the time to learn more about web applications beyond the basics I a
 
 (define regiPanel (new vertical-panel%
                        [parent main]
-                       [style '(deleted border)]
+                       [style '(deleted)]
                        [alignment '(left top)]
                        [horiz-margin 0]
                        [vert-margin 0]
@@ -2569,12 +2794,19 @@ I don't have the time to learn more about web applications beyond the basics I a
                            )
   )
 
+
 (define moreInfo2 (new vertical-panel%
                        [parent regiSection]
                        [alignment '(right top)]
                        [horiz-margin 0]
                        [vert-margin 0]
                        [min-width 700]
+                       )
+  ) 
+ 
+(define signuppic (new message%
+                       [parent moreInfo2]
+                       [label (read-bitmap "GUI Images/main-gui/signup-pic.png")]
                        )
   )
 
@@ -2980,7 +3212,7 @@ I don't have the time to learn more about web applications beyond the basics I a
                              [parent inputArea]
                              [init-value ""]
                              [style '(single vertical-label)]
-                             [label "Date (DD-MM-YY): "]
+                             [label "Date (DD-MM-YYYY): "]
                              [horiz-margin 80]
                              [vert-margin 5]
                              )
@@ -3075,6 +3307,184 @@ I don't have the time to learn more about web applications beyond the basics I a
 
 #|------------------End: Add Concerts Page-------------------|#
 
+#|------------------Start: Edit Concert Page-------------------|#
+
+(define editEventMain (new vertical-panel%
+                          [parent main]
+                          [style '(deleted)]
+                          [vert-margin 5]
+                          )
+  )
+
+(define editEventHeader (new horizontal-panel%
+                               [parent editEventMain]
+                               [horiz-margin 5]
+                               [style '(border)]
+                               [alignment '(center center)]
+                               )
+  )
+
+(define editTitle (new message%
+                      [label "Create Concert Listing"]
+                      [parent editEventHeader]
+                      )
+  )
+
+(define editConcertArea (new horizontal-panel%
+                               [parent editEventMain]
+                               [horiz-margin 5]
+                               [vert-margin 5]
+                               [alignment '(center center)]
+                               [min-height 800]
+                               )
+  )
+
+(define spacerOne (new panel%
+                     [parent editConcertArea]
+                     )
+  )
+
+(define editArea (new vertical-panel%
+                       [parent editConcertArea]
+                       [alignment '(center center)]
+                       [style '(border)]
+                       [min-width 600]
+                       )
+  )
+
+(define changeAlign2 (new panel%
+                         [parent editArea]
+                         [alignment '(left center)]
+                         [horiz-margin 80]
+                         [vert-margin 40]
+                         )
+  )
+
+(define moretitle (new message%
+                         [parent changeAlign2]
+                         [label "Enter new concert details"]
+                         )
+  )
+
+(define bandNameEdit (new text-field%
+                             [parent editArea]
+                             [init-value ""]
+                             [style '(single vertical-label)]
+                             [label "Band Name: "]
+                             [horiz-margin 80]
+                             [vert-margin 5]
+                             [enabled #f]
+                             )
+  )
+
+(define locationEdit (new text-field%
+                             [parent editArea]
+                             [init-value ""]
+                             [style '(single vertical-label)]
+                             [label "Location Venue: "]
+                             [horiz-margin 80]
+                             [vert-margin 5]
+                             )
+  )
+
+(define dateEdit (new text-field%
+                             [parent editArea]
+                             [init-value ""]
+                             [style '(single vertical-label)]
+                             [label "Date (DD-MM-YY): "]
+                             [horiz-margin 80]
+                             [vert-margin 5]
+                             )
+  )
+(define priceEdit (new text-field%
+                             [parent editArea]
+                             [init-value ""]
+                             [style '(single vertical-label)]
+                             [label "Price (£): "]
+                             [horiz-margin 80]
+                             [vert-margin 5]
+                             )
+  )
+(define timeEditMixer (new horizontal-panel%
+                       [parent editArea]
+                       [alignment '(left top)]
+                       [horiz-margin 80]
+                       [vert-margin 5]
+                       )
+  )
+
+(define timeEditHr (new text-field%
+                             [parent timeEditMixer]
+                             [init-value ""]
+                             [style '(single vertical-label)]
+                             [label "Time (23:59): "]
+                             
+                             )
+  )
+
+
+(define timeEditMin (new text-field%
+                             [parent timeEditMixer]
+                             [init-value ""]
+                             [style '(single )]
+                             [label ":"]
+                             [vert-margin 20]
+                             )
+  )
+
+(define buttonEdits (new horizontal-panel%
+                          [parent editArea]
+                          [alignment '(center top)]
+                          [horiz-margin 100]
+                          [vert-margin 20]
+                          )
+  )
+
+(define cancelEdit (new button%
+                       [parent buttonEdits]
+                       [label "Cancel"]
+                       [horiz-margin 20]
+                       [callback
+                        (λ (o e)
+                          (toBandConcerts)
+                          )
+                        ]
+                       )
+  )
+
+(define attemptEdit (new updatingButton%
+                           [parent buttonEdits]
+                           [label "Update"]
+                           [horiz-margin 20]
+                           [callback (λ (o e)
+                                       (verifyEdit (send attemptEdit get-extra))
+                                       )
+                                     ]
+                           )
+  )
+
+(define whySpace2 (new vertical-panel%
+                      [parent editArea]
+                      [min-height 100]
+                      [alignment '(center top)]
+                      [horiz-margin 80]
+                      [vert-margin 10]
+                      )
+  )
+
+(define editErrMsg (new message%
+                         [parent whySpace2]
+                         [label ""]
+                         [auto-resize #t]
+                         )
+  )
+
+(define spacerTwo (new panel%
+                     [parent editConcertArea]
+                     )
+  )
+
+#|------------------End: Edit Concert Page-------------------|#
 
 #|-------------------------------------------------------------------------------- End: GUI Elements  ------------------------------------------------------------------------------------|#
 
