@@ -1,1 +1,4 @@
-fanboi password fan@mail.com Test Usertestregi password newuser@mail.com New User
+fanboi password fan@mail.com Test (User)
+testregi password newuser@mail.com New (User)
+bananaboy beer bgeez@simpsons.com Barny (Gumble)
+dohmer marge dohdoh@simpsons.com Homer (Simpson)
