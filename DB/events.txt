@@ -1,2 +1,9 @@
-0001 coolband (The Place) 12-12-24 20:00 15.00
-0002 coolerband (The New Place) 13-04-25 13:00 12.50
+0001 coolband (The Place) 12-12-2024 20:00 15.00 a
+0002 coolerband (The New Place) 13-04-2025 13:00 12.50 a
+0003 bananagalz (Someplace Cool) 07-02-2025 19:00 9.80 a
+0004 firelights (The Tree) 15-03-2025 21:00 14.00 b
+0005 edgelords (The Underground) 16-05-2025 16:00 43.00 a
+0007 coolband (The 02) 14-02-2025 17:00 24.00 c
+0008 firelights (OVO Wembley) 15-03-2025 19:00 44.00 a
+0009 poisonberry (Selland Arena) 24-06-2025 13:00 33.00 a
+0010 coolband (Monkey Island) 13-04-2025 18:00 16.00 a
