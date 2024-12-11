@@ -437,6 +437,12 @@ This program will export data to txt files in the correct formats for re-reading
                       (for ((i (send regiIn get-children)))
                         (send regiIn delete-child i)
                         )
+                      (send regiFanUsername set-value "")
+                      (send regiFanName set-value "")
+                      (send regiFanSurname set-value "")
+                      (send regiFanEmail set-value "")
+                      (send regiFanPassword set-value "")
+                      
                       (send stayLeft delete-child pickRegi)
                       (send stayLeft add-child regiSide)
                       (send regiIn add-child regiFan)
@@ -449,6 +455,11 @@ This program will export data to txt files in the correct formats for re-reading
                        (for ((i (send regiIn get-children)))
                          (send regiIn delete-child i)
                          )
+                       (send regiBandUsername set-value "")
+                      (send regiBandName set-value "")
+                      (send regiBandEmail set-value "")
+                      (send regiBandPassword set-value "")
+                       
                        (send stayLeft delete-child pickRegi)
                        (send stayLeft add-child regiSide)
                        (send regiIn add-child regiBand)
@@ -515,6 +526,7 @@ This program will export data to txt files in the correct formats for re-reading
                                           (set! @counter (add1 @counter)))
                                          )
                                        )
+
                                      
                                      )
                        )
@@ -555,13 +567,15 @@ This program will export data to txt files in the correct formats for re-reading
                            (send regiMessenger set-label "No @ found in email.")(send regiMessenger set-color "red"))
                           ((> @counter 1)
                            (send regiMessenger set-label "Too many @'s found in email.")(send regiMessenger set-color "red"))
-                          ((not (empty? (regexp-match* #rx"(?!(.))[^a-zA-Z0-9]+" beforeAt)))
+                          ((not (empty? (regexp-match* #rx"(?!\\.)[^a-zA-Z0-9]+" beforeAt)))
                            (send regiMessenger set-label "Emails can only contain letters, numbers, and periods.")(send regiMessenger set-color "red"))
-                          ((not (empty? (regexp-match* #rx"(?!(.))[^a-zA-Z0-9]+" afterAt)))
+                          ((not (empty? (regexp-match* #rx"(?!\\.)[^a-zA-Z0-9]+" afterAt)))
                            (send regiMessenger set-label "Emails can only contain letters, numbers, and periods.")(send regiMessenger set-color "red"))
-                          ((or (not (empty? (regexp-match* #rx"(\\.\\.)+" beforeAt))) (not (empty? (regexp-match* #rx"(\\.\\.)+" afterAt))))
+                          ((empty? (regexp-match* #rx"\\." afterAt))
+                           (send regiMessenger set-label "Incorrect format for email domain.")(send regiMessenger set-color "red"))
+                          ((or (not (empty? (regexp-match* #rx"\\.\\.+" beforeAt))) (not (empty? (regexp-match* #rx"\\.\\.+" afterAt))))
                            (send regiMessenger set-label "No consecutive periods.")(send regiMessenger set-color "red"))
-                          ((not (empty? (regexp-match* #rx"(\\.@\\.)+" (send regiFanEmail get-value))))
+                          ((or (not (empty? (regexp-match* #rx"\\.@+" (send regiFanEmail get-value)))) (not (empty? (regexp-match* #rx"@\\.+" (send regiFanEmail get-value)))))
                            (send regiMessenger set-label "No periods before or after @.")(send regiMessenger set-color "red"))
 
                           ((alreadyUsername? (send regiFanUsername get-value))
@@ -591,6 +605,7 @@ This program will export data to txt files in the correct formats for re-reading
                         (set! copy (send regiBandEmail get-value))
 
                         (split)
+                        
 
                         (cond
                           ((equal? (send regiBandUsername get-value) "")
@@ -607,7 +622,7 @@ This program will export data to txt files in the correct formats for re-reading
                           ((not (empty? (regexp-match* #rx"(__)+" (send regiBandUsername get-value))))
                            (send regiMessenger set-label "Sorry, an underscore cannot be followed by another underscore. Try again.")(send regiMessenger set-color "red"))
 
-                          ((not (empty? (regexp-match* #rx"(?!( ))[^a-zA-Z]+" (send regiBandName get-value))))
+                          ((not (empty? (regexp-match* #rx"(?!( ))[^a-zA-Z]+" (send regiBandName get-value)))) 
                            (send regiMessenger set-label "Invalid characters found in band name. Try again.")(send regiMessenger set-color "red"))
                           ((not (empty? (regexp-match* #rx"(  )+" (send regiBandName get-value))))
                            (send regiMessenger set-label "Consecutive spaces in band name. Try again.")(send regiMessenger set-color "red"))
@@ -619,13 +634,15 @@ This program will export data to txt files in the correct formats for re-reading
                            (send regiMessenger set-label "Invalid email.")(send regiMessenger set-color "red"))
                           ((> @counter 1)
                            (send regiMessenger set-label "Too many @'s found in email.")(send regiMessenger set-color "red"))
-                          ((not (empty? (regexp-match* #rx"(?!(.))[^a-zA-Z0-9]+" beforeAt)))
+                          ((not (empty? (regexp-match* #rx"(?!\\.)[^a-zA-Z0-9]+" beforeAt))) ;; why is my regex suddenly backtracking it was working before
                            (send regiMessenger set-label "Emails can only contain letters, numbers, and periods.")(send regiMessenger set-color "red"))
-                          ((not (empty? (regexp-match* #rx"(?!(.))[^a-zA-Z0-9]+" afterAt)))
+                          ((not (empty? (regexp-match* #rx"(?!\\.)[^a-zA-Z0-9]+" afterAt)))
                            (send regiMessenger set-label "Emails can only contain letters, numbers, and periods.")(send regiMessenger set-color "red"))
-                          ((or (not (empty? (regexp-match* #rx"(\\.\\.)+" beforeAt))) (not (empty? (regexp-match* #rx"(\\.\\.)+" afterAt))))
-                           (send regiMessenger set-label "No consecutive periods.")(send regiMessenger set-color "red"))
-                          ((not (empty? (regexp-match* #rx"(\\.@\\.)+" (send regiFanEmail get-value))))
+                          ((empty? (regexp-match* #rx"\\." afterAt))
+                           (send regiMessenger set-label "Incorrect format for email domain.")(send regiMessenger set-color "red"))
+                          ((or (not (empty? (regexp-match* #rx"\\.\\.+" beforeAt))) (not (empty? (regexp-match* #rx"\\.\\.+" afterAt))))
+                           (send regiMessenger set-label "No consecutive periods in email.")(send regiMessenger set-color "red"))
+                          ((or (not (empty? (regexp-match* #rx"\\.@+" (send regiBandEmail get-value)))) (not (empty? (regexp-match* #rx"@\\.+" (send regiBandEmail get-value)))))
                            (send regiMessenger set-label "No periods before or after @.")(send regiMessenger set-color "red"))
 
                           ((alreadyUsername? (send regiBandUsername get-value))
@@ -1698,7 +1715,7 @@ This program will export data to txt files in the correct formats for re-reading
                                                   
                                                     (cond
                                                       ((empty? bandEvents)
-                                                       (send ifempty set-label "No events saved yet.")
+                                                       (send ifempty set-label "No events created yet.")
                                                        (send ifempty set-color "red")
                                                        )
 
@@ -3070,7 +3087,7 @@ I don't have the time to learn more about web applications in racket beyond the 
 
 (define titler (new message%
                     [parent concertsHeader]
-                    [label "Your Saved Events"]
+                    [label "Your Concerts"]
                     )
   )
 
